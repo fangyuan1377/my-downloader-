@@ -4,22 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'YouTube or Telegram URL'
+        description: 'YouTube URL'
         required: true
         type: string
-      method:
-        description: 'Platform'
-        required: true
-        default: 'youtube'
-        type: choice
-        options:
-          - youtube
-          - telegram
 
 permissions:
   contents: write
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   download:
     runs-on: ubuntu-latest
@@ -32,13 +26,16 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install yt-dlp
         run: |
           pip install yt-dlp
+          yt-dlp --version
 
-      - name: Download video
+      - name: Download video with verbose logging
         run: |
-          yt-dlp -f "bestvideo+bestaudio/best" --merge-output-format mp4 "${{ github.event.inputs.url }}"
+          set -e
+          yt-dlp -v -f "bestvideo+bestaudio/best" --merge-output-format mp4 "${{ github.event.inputs.url }}" 2>&1
+          echo "Download completed"
 
       - name: Upload to repository
         run: |
