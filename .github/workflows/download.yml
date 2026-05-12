@@ -1,11 +1,6 @@
-name: YouTube Downloader (Stable)
+name: YouTube Advanced Downloader
 
-on:
-  workflow_dispatch:
-    inputs:
-      url:
-        description: 'YouTube URL'
-        required: true
+on: workflow_dispatch
 
 permissions:
   contents: write
@@ -17,14 +12,20 @@ jobs:
   download:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install yt-dlp & ffmpeg
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install yt-dlp and dependencies
         run: |
           pip install --upgrade yt-dlp
           sudo apt-get update
@@ -39,8 +40,9 @@ jobs:
             COOKIE_OPT=""
             echo "⚠️ No cookies found, trying without cookies"
           fi
-          
+
           yt-dlp $COOKIE_OPT \
+            --js-runtime node \
             --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
             --extractor-args "youtube:player_client=android,web;player_skip=webpage" \
             -f "best[height<=720]/bestvideo+bestaudio/best" \
