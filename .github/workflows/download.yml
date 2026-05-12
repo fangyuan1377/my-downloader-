@@ -34,7 +34,7 @@ jobs:
       - name: Download video with cookies
         run: |
           echo "${{ secrets.COOKIES }}" > cookies.txt
-          yt-dlp --cookies cookies.txt -f "bestvideo+bestaudio/best" --merge-output-format mp4 "${{ github.event.inputs.url }}"
+          yt-dlp --cookies cookies.txt -f "best[height<=720]/best" --merge-output-format mp4 "${{ github.event.inputs.url }}"
 
       - name: Upload to repository
         run: |
