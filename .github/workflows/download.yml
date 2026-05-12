@@ -1,6 +1,12 @@
 name: YouTube Advanced Downloader
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'YouTube Video URL'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -53,7 +59,7 @@ jobs:
       - name: Upload files
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config.user.email "github-actions[bot]@users.noreply.github.com"
           git add *.mp4 *.mkv *.webm 2>/dev/null || echo "No video files"
           git commit -m "Add video [skip ci]" || echo "Nothing to commit"
           git push
