@@ -31,10 +31,16 @@ jobs:
           pip install yt-dlp
           yt-dlp --version
 
-      - name: Download video with cookies
+      - name: Download video with cookies (enhanced)
         run: |
-          echo "${{ secrets.COOKIES }}" > cookies.txt
-          yt-dlp --cookies cookies.txt -f "best[height<=720]/best" --merge-output-format mp4 "${{ github.event.inputs.url }}"
+              echo "${{ secrets.COOKIES }}" > cookies.txt
+              yt-dlp --cookies cookies.txt \
+                     --extractor-args "youtube:player_client=android,web;player_skip=webpage" \
+                     -f "best[height<=720]/best" \
+                     --merge-output-format mp4 \
+                     --no-check-certificate \
+                    "${{ github.event.inputs.url }}"
+
 
       - name: Upload to repository
         run: |
