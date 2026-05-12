@@ -1,12 +1,11 @@
-name: YouTube Advanced Downloader
+name: YouTube Downloader (Stable)
 
 on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'YouTube Video URL'
+        description: 'YouTube URL'
         required: true
-        type: string
 
 permissions:
   contents: write
@@ -18,34 +17,41 @@ jobs:
   download:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install yt-dlp and dependencies
+      - name: Install yt-dlp & ffmpeg
         run: |
           pip install --upgrade yt-dlp
           sudo apt-get update
-          sudo apt-get install -y ffmpeg chromium-browser
+          sudo apt-get install -y ffmpeg
 
-      - name: Download video
+      - name: Download video with cookies
         run: |
-          yt-dlp --cookies-from-browser chromium \
-                 --format "best[height<=720]/bestvideo+bestaudio/best" \
-                 --merge-output-format mp4 \
-                 --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-                 --extractor-args "youtube:player_client=android,web;player_skip=webpage" \
-                 --no-check-certificate \
-                 "${{ github.event.inputs.url }}"
+          if [ -n "${{ secrets.COOKIES }}" ]; then
+            echo "${{ secrets.COOKIES }}" > cookies.txt
+            COOKIE_OPT="--cookies cookies.txt"
+          else
+            COOKIE_OPT=""
+            echo "⚠️ No cookies found, trying without cookies"
+          fi
+          
+          yt-dlp $COOKIE_OPT \
+            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            --extractor-args "youtube:player_client=android,web;player_skip=webpage" \
+            -f "best[height<=720]/bestvideo+bestaudio/best" \
+            --merge-output-format mp4 \
+            --no-check-certificate \
+            "${{ github.event.inputs.url }}"
 
-      - name: Upload to repository
+      - name: Upload files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add *.mp4 *.webm *.mkv 2>/dev/null || echo "No files to add"
-          git commit -m "Add downloaded file [skip ci]" || echo "Nothing to commit"
+          git add *.mp4 *.mkv *.webm 2>/dev/null || echo "No video files"
+          git commit -m "Add video [skip ci]" || echo "Nothing to commit"
           git push
