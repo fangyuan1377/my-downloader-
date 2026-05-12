@@ -47,14 +47,14 @@ jobs:
             echo "⚠️ No cookies found, trying without cookies"
           fi
 
-          yt-dlp $COOKIE_OPT \
-            --js-runtime node \
-            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            --extractor-args "youtube:player_client=android,web;player_skip=webpage" \
-            -f "best[height<=720]/bestvideo+bestaudio/best" \
-            --merge-output-format mp4 \
-            --no-check-certificate \
-            "${{ github.event.inputs.url }}"
+       yt-dlp $COOKIE_OPT \
+         --remote-components ejs:github \
+         --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+         --extractor-args "youtube:player_client=android,web;player_skip=webpage" \
+         -f "best[height<=720]/bestvideo+bestaudio/best" \
+         --merge-output-format mp4 \
+         --no-check-certificate \
+         "${{ github.event.inputs.url }}"
 
       - name: Upload files
         run: |
